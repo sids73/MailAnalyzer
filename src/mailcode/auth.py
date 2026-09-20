@@ -65,7 +65,10 @@ def get_google_access_token(
         from google.oauth2.credentials import Credentials
         from google_auth_oauthlib.flow import InstalledAppFlow
     except ImportError as error:
-        raise RuntimeError("Google OAuth dependencies are missing; reinstall MailCode") from error
+        raise RuntimeError(
+            "Google OAuth dependencies are missing. Activate MailCode's virtual environment "
+            "or install MailCode into this Python environment."
+        ) from error
 
     credential_store = store or CredentialStore()
     serialized = credential_store.get("gmail", email_address)

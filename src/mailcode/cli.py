@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import argparse
 import getpass
+import imaplib
 import os
+import sqlite3
+import sys
 from pathlib import Path
 
 from mailcode.auth import get_google_access_token, get_microsoft_access_token
@@ -89,6 +92,14 @@ def build_parser(runtime_paths: RuntimePaths | None = None) -> argparse.Argument
 
 
 def main() -> int:
+    try:
+        return _run()
+    except (RuntimeError, ValueError, OSError, sqlite3.Error, imaplib.IMAP4.error) as error:
+        print(f"Error: {error}", file=sys.stderr)
+        return 1
+
+
+def _run() -> int:
     runtime_paths = get_runtime_paths()
     args = build_parser(runtime_paths).parse_args()
     output_path = getattr(args, "output", runtime_paths.reports)

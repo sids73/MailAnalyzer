@@ -1,3 +1,5 @@
+import contextlib
+import io
 import sys
 import tempfile
 import unittest
@@ -11,6 +13,38 @@ from mailcode.paths import MigrationResult, RuntimePaths
 
 
 class CliTests(unittest.TestCase):
+    def test_expected_runtime_error_is_printed_without_traceback(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            runtime_paths = RuntimePaths(root, root / "mail.db", root / "reports")
+            arguments = ["mailcode", "scan", "--email", "owner@gmail.com"]
+            stderr = io.StringIO()
+            with (
+                patch.object(sys, "argv", arguments),
+                patch("mailcode.cli.get_runtime_paths", return_value=runtime_paths),
+                patch(
+                    "mailcode.cli.get_google_access_token",
+                    side_effect=RuntimeError(
+                        "Google OAuth dependencies are missing. Activate MailCode's virtual "
+                        "environment or install MailCode into this Python environment."
+                    ),
+                ),
+                contextlib.redirect_stderr(stderr),
+            ):
+                self.assertEqual(main(), 1)
+
+        self.assertEqual(
+            stderr.getvalue(),
+            "Error: Google OAuth dependencies are missing. Activate MailCode's virtual "
+            "environment or install MailCode into this Python environment.\n",
+        )
+        self.assertNotIn("Traceback", stderr.getvalue())
+
+    def test_unexpected_programming_error_is_not_hidden(self) -> None:
+        with patch("mailcode.cli._run", side_effect=AssertionError("bug")):
+            with self.assertRaisesRegex(AssertionError, "bug"):
+                main()
+
     def test_scan_refreshes_default_reports(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

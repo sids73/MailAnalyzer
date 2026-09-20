@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mailcode"
+version = "0.1.0"
+description = "A local multi-provider email inventory, cleanup planner, and guarded Trash mover"
+requires-python = ">=3.11"
+dependencies = [
+	"google-auth>=2.0",
+	"google-auth-oauthlib>=1.0",
+	"keyring>=24.0",
+	"msal>=1.20",
+]
+classifiers = [
+	"Environment :: Console",
+	"Operating System :: MacOS",
+	"Operating System :: Microsoft :: Windows",
+	"Operating System :: POSIX :: Linux",
+	"Programming Language :: Python :: 3",
+	"Programming Language :: Python :: 3.11",
+	"Programming Language :: Python :: 3.12",
+	"Programming Language :: Python :: 3.13",
+	"Programming Language :: Python :: 3.14",
+]
+
+[project.scripts]
+mailcode = "mailcode.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

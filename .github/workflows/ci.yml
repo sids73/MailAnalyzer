@@ -12,8 +12,6 @@ jobs:
         os: [windows-latest, ubuntu-latest, macos-latest]
         python-version: ["3.11", "3.14"]
     runs-on: ${{ matrix.os }}
-    env:
-      MAILCODE_HOME: ${{ runner.temp }}/mailcode-state
 
     steps:
       - uses: actions/checkout@v4
@@ -23,12 +21,16 @@ jobs:
       - name: Install MailCode
         run: python -m pip install -e .
       - name: Run tests
+        env:
+          MAILCODE_HOME: ${{ runner.temp }}/mailcode-state
         run: python -m unittest discover -s tests -v
       - name: Compile sources
         run: python -m compileall -q src tests
       - name: Verify installed command
         run: mailcode --help
       - name: Exercise local state commands
+        env:
+          MAILCODE_HOME: ${{ runner.temp }}/mailcode-state
         run: |
           mailcode reset --confirm
           mailcode report
